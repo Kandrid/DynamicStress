@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 public final class DynamicStress extends JavaPlugin {
 
-    private HashMap<Player, Integer> heartRates = new HashMap<>();
+    //private HashMap<Player, Integer> heartRates = new HashMap<>();
     final double maxDistance = 35;
 
     @Override
@@ -28,9 +28,9 @@ public final class DynamicStress extends JavaPlugin {
                 int monsters = 0;
 
                 for (Player player : getServer().getOnlinePlayers()) {
-                    if (!heartRates.containsKey(player)) {
-                        heartRates.put(player, 75);
-                    }
+                    //if (!heartRates.containsKey(player)) {
+                    //    heartRates.put(player, 75);
+                    //}
 
                     for (int i = 0; i < 10; i++) {
                         player.sendRawMessage("\n");
