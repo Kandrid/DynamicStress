@@ -10,12 +10,50 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class DynamicStress extends JavaPlugin {
 
     //private HashMap<Player, Integer> heartRates = new HashMap<>();
     final double maxDistance = 35;
+
+    final HashSet<EntityType> otherHostiles = new HashSet<>(Arrays.asList(
+            EntityType.SLIME,
+            EntityType.MAGMA_CUBE,
+            EntityType.GHAST,
+            EntityType.SHULKER,
+            EntityType.PHANTOM
+    ));
+
+    final HashSet<EntityType> smallMobs = new HashSet<>(Arrays.asList(
+            EntityType.CAVE_SPIDER,
+            EntityType.ENDERMITE,
+            EntityType.ENDERMITE,
+            EntityType.GUARDIAN,
+            EntityType.PHANTOM,
+            EntityType.SHULKER,
+            EntityType.SPIDER,
+            EntityType.SILVERFISH,
+            EntityType.VEX
+    ));
+
+    final HashSet<Material> passiveBlocks = new HashSet<>(Arrays.asList(
+            Material.LARGE_FERN,
+            Material.FERN,
+            Material.AIR,
+            Material.CAVE_AIR,
+            Material.VOID_AIR,
+            Material.TALL_GRASS,
+            Material.GRASS,
+            Material.TALL_SEAGRASS,
+            Material.WATER,
+            Material.GLASS,
+            Material.GLASS_PANE,
+            Material.VINE
+    ));
 
     @Override
     public void onEnable() {
@@ -37,7 +75,7 @@ public final class DynamicStress extends JavaPlugin {
                     }
 
                     for (Entity entity : player.getNearbyEntities(maxDistance,maxDistance,maxDistance)) {
-                        if (entity instanceof Monster || entity.getType() == EntityType.SLIME || entity.getType() == EntityType.MAGMA_CUBE || entity.getType() == EntityType.GHAST || entity.getType() == EntityType.SHULKER || entity.getType() == EntityType.PHANTOM) {
+                        if (entity instanceof Monster || otherHostiles.contains(entity.getType())) {
                             if (isInSight(player, entity)) {
                                 monsters++;
                             }
@@ -54,7 +92,7 @@ public final class DynamicStress extends JavaPlugin {
     }
 
     boolean isInSight(Player player, Entity entity) {
-        boolean small = (entity.getType() == EntityType.CAVE_SPIDER || entity.getType() == EntityType.ENDERMITE || entity.getType() == EntityType.GUARDIAN || entity.getType() == EntityType.PHANTOM || entity.getType() == EntityType.SHULKER || entity.getType() == EntityType.SPIDER || entity.getType() == EntityType.SILVERFISH || entity.getType() == EntityType.VEX);
+        boolean small = smallMobs.contains(entity.getType());
         Location eLocation = entity.getLocation();
         eLocation.setY(eLocation.getY() + (small ? 0.5 : 1.5));
         Location pLocation = player.getLocation().clone();
@@ -77,7 +115,7 @@ public final class DynamicStress extends JavaPlugin {
                 Material m1 = player.getWorld().getBlockAt((int)Math.floor(step.getX()), (int)Math.floor(step.getY()), (int)Math.floor(step.getZ())).getType();
                 Material m2 = small ? m1 : player.getWorld().getBlockAt((int)Math.floor(step.getX()), (int)Math.floor(step.getY() - 1), (int)Math.floor(step.getZ())).getType();
 
-                if ((m1 != Material.LARGE_FERN && m1 != Material.FERN && m1 != Material.AIR && m1 != Material.CAVE_AIR && m1 != Material.VOID_AIR && m1 != Material.TALL_GRASS && m1 != Material.GRASS && m1 != Material.TALL_SEAGRASS && m1 != Material.WATER && m1 != Material.GLASS && m1 != Material.GLASS_PANE && m1 != Material.VINE) && (small || (m2 != Material.AIR && m2 != Material.CAVE_AIR && m2 != Material.VOID_AIR && m2 != Material.TALL_GRASS && m2 != Material.GRASS && m2 != Material.TALL_SEAGRASS && m2 != Material.WATER && m2 != Material.GLASS && m2 != Material.GLASS_PANE &&  m2 != Material.VINE && m2 != Material.LARGE_FERN && m2 != Material.FERN))) {
+                if (!passiveBlocks.contains(m1) && (small || !passiveBlocks.contains(m2))) {
                     break;
                 }
             }
