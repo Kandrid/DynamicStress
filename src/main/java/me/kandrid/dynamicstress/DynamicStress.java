@@ -2,10 +2,7 @@ package me.kandrid.dynamicstress;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Monster;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Entity;
+import org.bukkit.entity.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -17,7 +14,7 @@ import java.util.HashSet;
 public final class DynamicStress extends JavaPlugin {
 
     //private HashMap<Player, Integer> heartRates = new HashMap<>();
-    final double maxDistance = 35;
+    final double maxDistance = 40;
 
     final HashSet<EntityType> otherHostiles = new HashSet<>(Arrays.asList(
             EntityType.SLIME,
@@ -37,6 +34,15 @@ public final class DynamicStress extends JavaPlugin {
             EntityType.SPIDER,
             EntityType.SILVERFISH,
             EntityType.VEX
+    ));
+
+    final HashSet<Material> leaves = new HashSet<>(Arrays.asList(
+            Material.ACACIA_LEAVES,
+            Material.BIRCH_LEAVES,
+            Material.DARK_OAK_LEAVES,
+            Material.JUNGLE_LEAVES,
+            Material.OAK_LEAVES,
+            Material.SPRUCE_LEAVES
     ));
 
     @Override
@@ -60,7 +66,7 @@ public final class DynamicStress extends JavaPlugin {
 
                     for (Entity entity : player.getNearbyEntities(maxDistance,maxDistance,maxDistance)) {
                         if (entity instanceof Monster || otherHostiles.contains(entity.getType())) {
-                            if (isInSight(player, entity)) {
+                            if (isInSight(player, (LivingEntity)entity)) {
                                 monsters++;
                             }
                         }
@@ -71,16 +77,16 @@ public final class DynamicStress extends JavaPlugin {
 
             }
 
-        }.runTaskTimer(this, 0L, 10L);
+        }.runTaskTimer(this, 0L, 1L);
 
     }
 
-    boolean isInSight(Player player, Entity entity) {
+    boolean isInSight(Player player, LivingEntity entity) {
         boolean small = smallMobs.contains(entity.getType());
         Location eLocation = entity.getLocation();
         eLocation.setY(eLocation.getY() + (small ? 0.5 : 1.5));
         Location pLocation = player.getLocation().clone();
-        pLocation.setY(pLocation.getY() + 1.5);
+        pLocation.setY(pLocation.getY() + (player.isSneaking() ? 1.25 : 1.6));
         final double eDistance = eLocation.distance(pLocation);
         final double fov = 60;
         final double precision = 1;
@@ -89,17 +95,21 @@ public final class DynamicStress extends JavaPlugin {
         final double angle = Math.toDegrees(pVector.angle(eVector));
 
         if (angle <= fov) {
+            Vector step;
+            Material m1, m2;
+
             for (double i = 0; i < maxDistance; i += precision) {
                 if (i >= eDistance) {
-                    player.sendRawMessage("Type:" + entity.getName() + " ID:" + entity.getEntityId() + " Dist:" + Math.round(eDistance * 10.0) / 10.0 + " Angle:" + Math.round(angle));
+                    player.sendRawMessage(entity.getName() + "-" + entity.getEntityId() + ": " + Math.round(entity.getHealth() * 100.0) / 100.0 + "HP");
                     return true;
                 }
 
-                Vector step = pLocation.toVector().add(eVector.clone().multiply(i));
-                Material m1 = player.getWorld().getBlockAt((int)Math.floor(step.getX()), (int)Math.floor(step.getY()), (int)Math.floor(step.getZ())).getType();
-                Material m2 = small ? m1 : player.getWorld().getBlockAt((int)Math.floor(step.getX()), (int)Math.floor(step.getY() - 1), (int)Math.floor(step.getZ())).getType();
+                step = pLocation.toVector().add(eVector.clone().multiply(i));
 
-                if (m1.isOccluding() && (small || m2.isOccluding())) {
+                m1 = player.getWorld().getBlockAt(step.getBlockX(), step.getBlockY(), step.getBlockZ()).getType();
+                m2 = small ? m1 : player.getWorld().getBlockAt(step.getBlockX(), step.getBlockY() - 1, step.getBlockZ()).getType();
+
+                if (m1.isOccluding() || leaves.contains(m1) && (small || (m2.isOccluding() || leaves.contains(m2)))) {
                     break;
                 }
             }
