@@ -14,7 +14,7 @@ import java.util.HashSet;
 public final class DynamicStress extends JavaPlugin {
 
     //private HashMap<Player, Integer> heartRates = new HashMap<>();
-    final double maxDistance = 40;
+    final double maxDistance = 35;
 
     final HashSet<EntityType> otherHostiles = new HashSet<>(Arrays.asList(
             EntityType.SLIME,
@@ -77,7 +77,7 @@ public final class DynamicStress extends JavaPlugin {
 
             }
 
-        }.runTaskTimer(this, 0L, 1L);
+        }.runTaskTimer(this, 0L, 10L);
 
     }
 
