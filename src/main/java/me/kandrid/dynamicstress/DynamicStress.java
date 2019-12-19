@@ -37,7 +37,7 @@ public final class DynamicStress extends JavaPlugin {
                     }
 
                     for (Entity entity : player.getNearbyEntities(maxDistance,maxDistance,maxDistance)) {
-                        if (entity instanceof Monster || entity.getType() == EntityType.SLIME || entity.getType() == EntityType.MAGMA_CUBE || entity.getType() == EntityType.GHAST || entity.getType() == EntityType.SHULKER) {
+                        if (entity instanceof Monster || entity.getType() == EntityType.SLIME || entity.getType() == EntityType.MAGMA_CUBE || entity.getType() == EntityType.GHAST || entity.getType() == EntityType.SHULKER || entity.getType() == EntityType.PHANTOM) {
                             if (isInSight(player, entity)) {
                                 monsters++;
                             }
