@@ -39,58 +39,6 @@ public final class DynamicStress extends JavaPlugin {
             EntityType.VEX
     ));
 
-    final HashSet<Material> passiveBlocks = new HashSet<>(Arrays.asList(
-            Material.LARGE_FERN,
-            Material.FERN,
-            Material.AIR,
-            Material.CAVE_AIR,
-            Material.VOID_AIR,
-            Material.TALL_GRASS,
-            Material.GRASS,
-            Material.TALL_SEAGRASS,
-            Material.WATER,
-            Material.VINE,
-            Material.TORCH,
-            Material.WALL_TORCH,
-            Material.REDSTONE,
-            Material.REDSTONE_TORCH,
-            Material.REDSTONE_WALL_TORCH,
-            Material.GLASS,
-            Material.GLASS_PANE,
-            Material.BLACK_STAINED_GLASS,
-            Material.BLACK_STAINED_GLASS_PANE,
-            Material.BLUE_STAINED_GLASS,
-            Material.BLUE_STAINED_GLASS_PANE,
-            Material.BROWN_STAINED_GLASS,
-            Material.BROWN_STAINED_GLASS_PANE,
-            Material.CYAN_STAINED_GLASS,
-            Material.CYAN_STAINED_GLASS_PANE,
-            Material.GRAY_STAINED_GLASS,
-            Material.GRAY_STAINED_GLASS_PANE,
-            Material.GREEN_STAINED_GLASS,
-            Material.GREEN_STAINED_GLASS_PANE,
-            Material.LIGHT_BLUE_STAINED_GLASS,
-            Material.LIGHT_BLUE_STAINED_GLASS_PANE,
-            Material.LIGHT_GRAY_STAINED_GLASS,
-            Material.LIGHT_GRAY_STAINED_GLASS_PANE,
-            Material.LIME_STAINED_GLASS,
-            Material.LIME_STAINED_GLASS_PANE,
-            Material.MAGENTA_STAINED_GLASS,
-            Material.MAGENTA_STAINED_GLASS_PANE,
-            Material.ORANGE_STAINED_GLASS,
-            Material.ORANGE_STAINED_GLASS_PANE,
-            Material.PINK_STAINED_GLASS,
-            Material.PINK_STAINED_GLASS_PANE,
-            Material.PURPLE_STAINED_GLASS,
-            Material.PURPLE_STAINED_GLASS_PANE,
-            Material.RED_STAINED_GLASS,
-            Material.RED_STAINED_GLASS_PANE,
-            Material.WHITE_STAINED_GLASS,
-            Material.WHITE_STAINED_GLASS_PANE,
-            Material.YELLOW_STAINED_GLASS,
-            Material.YELLOW_STAINED_GLASS_PANE
-    ));
-
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -151,7 +99,7 @@ public final class DynamicStress extends JavaPlugin {
                 Material m1 = player.getWorld().getBlockAt((int)Math.floor(step.getX()), (int)Math.floor(step.getY()), (int)Math.floor(step.getZ())).getType();
                 Material m2 = small ? m1 : player.getWorld().getBlockAt((int)Math.floor(step.getX()), (int)Math.floor(step.getY() - 1), (int)Math.floor(step.getZ())).getType();
 
-                if (!passiveBlocks.contains(m1) && (small || !passiveBlocks.contains(m2))) {
+                if (m1.isOccluding() && (small || m2.isOccluding())) {
                     break;
                 }
             }
