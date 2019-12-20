@@ -109,7 +109,7 @@ public final class DynamicStress extends JavaPlugin {
                 m1 = player.getWorld().getBlockAt(step.getBlockX(), step.getBlockY(), step.getBlockZ()).getType();
                 m2 = small ? m1 : player.getWorld().getBlockAt(step.getBlockX(), step.getBlockY() - 1, step.getBlockZ()).getType();
 
-                if (m1.isOccluding() || leaves.contains(m1) && (small || (m2.isOccluding() || leaves.contains(m2)))) {
+                if ((m1.isOccluding() || leaves.contains(m1)) && (small || (m2.isOccluding() || leaves.contains(m2)))) {
                     break;
                 }
             }
