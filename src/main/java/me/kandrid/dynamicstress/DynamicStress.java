@@ -3,6 +3,7 @@ package me.kandrid.dynamicstress;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -21,17 +22,17 @@ public final class DynamicStress extends JavaPlugin {
 
     private static HashMap<UUID, Double> heartRates = new HashMap<>();
 
-    public static HashMap<UUID, Double> getHeartRates() { return heartRates; }
+    protected static HashMap<UUID, Double> getHeartRates() { return heartRates; }
 
     private static HashMap<UUID, HashSet<Integer>> mobsInSight = new HashMap<>();
 
-    public static HashMap<UUID, HashSet<Integer>> getMobsInSight() { return mobsInSight; }
+    protected static HashMap<UUID, HashSet<Integer>> getMobsInSight() { return mobsInSight; }
 
     final static double maxDistance = 35;
     final static double baseHeartRate = 75;
     private static boolean itemTitleModify = false;
 
-    final HashSet<EntityType> otherHostiles = new HashSet<>(Arrays.asList(
+    private final HashSet<EntityType> otherHostiles = new HashSet<>(Arrays.asList(
             EntityType.SLIME,
             EntityType.MAGMA_CUBE,
             EntityType.GHAST,
@@ -39,7 +40,7 @@ public final class DynamicStress extends JavaPlugin {
             EntityType.PHANTOM
     ));
 
-    final HashSet<EntityType> smallMobs = new HashSet<>(Arrays.asList(
+    private final HashSet<EntityType> smallMobs = new HashSet<>(Arrays.asList(
             EntityType.CAVE_SPIDER,
             EntityType.ENDERMITE,
             EntityType.ENDERMITE,
@@ -51,7 +52,7 @@ public final class DynamicStress extends JavaPlugin {
             EntityType.VEX
     ));
 
-    final HashSet<Material> leaves = new HashSet<>(Arrays.asList(
+    private final HashSet<Material> leaves = new HashSet<>(Arrays.asList(
             Material.ACACIA_LEAVES,
             Material.BIRCH_LEAVES,
             Material.DARK_OAK_LEAVES,
@@ -117,7 +118,7 @@ public final class DynamicStress extends JavaPlugin {
                             player.sendTitle("", "" + ChatColor.BOLD + ChatColor.BLACK + heartRate + " BPM", 0, 11, 0);
                         }
                     }
-
+                    /*
                     HashMap<Player, Double> playerDistances = new HashMap<>();
                     String title = "";
 
@@ -129,21 +130,21 @@ public final class DynamicStress extends JavaPlugin {
 
                     if (playerDistances.size() == 0) {
                         title = ChatColor.DARK_AQUA + "No Players Detected";
-                    }
+                    } else {
+                        for (int i = 0; i < 3 && playerDistances.size() > 0; i++) {
+                            HashMap.Entry<Player, Double> min = null;
 
-                    for (int i = 0; i < 3 && playerDistances.size() > 0; i++) {
-                        HashMap.Entry<Player, Double> min = null;
-
-                        for (HashMap.Entry<Player, Double> entry : playerDistances.entrySet()) {
-                            if (min == null || min.getValue() > entry.getValue()) {
-                                min = entry;
+                            for (HashMap.Entry<Player, Double> entry : playerDistances.entrySet()) {
+                                if (min == null || min.getValue() > entry.getValue()) {
+                                    min = entry;
+                                }
                             }
+
+                            double otherHeartRate = getHeartRates().get(min.getKey().getUniqueId());
+
+                            title += (ChatColor.DARK_AQUA + min.getKey().getDisplayName() + ": " + ChatColor.AQUA + (int) Math.round(otherHeartRate) + ChatColor.DARK_GRAY + " BPM ");
+                            playerDistances.remove(min.getKey());
                         }
-
-                        double otherHeartRate = getHeartRates().get(min.getKey().getUniqueId());
-
-                        title += (ChatColor.DARK_AQUA + min.getKey().getDisplayName() + ": " + ChatColor.AQUA + (int)Math.round(otherHeartRate)+ ChatColor.DARK_GRAY + " BPM ");
-                        playerDistances.remove(min.getKey());
                     }
 
                     if (itemTitleModify) {
@@ -158,7 +159,7 @@ public final class DynamicStress extends JavaPlugin {
                         ItemMeta itemMeta = item.getItemMeta();
                         itemMeta.setDisplayName(title);
                         item.setItemMeta(itemMeta);
-                    }
+                    }*/
                 }
             }
 
@@ -226,13 +227,20 @@ public final class DynamicStress extends JavaPlugin {
         if (angle <= fov) {
             Vector step;
             Material m1, m2;
+            HashSet<Location> steps = new HashSet<>();
 
             for (double i = 0; i < maxDistance; i += precision) {
                 if (i >= eDistance) {
+                    for (Location loc : steps) {
+                        player.spawnParticle(Particle.CRIT_MAGIC, loc,1, 0, 0, 0, 0);
+                    }
                     return true;
                 }
 
                 step = pLocation.toVector().add(eVector.clone().multiply(i));
+                if (i > 1) {
+                    steps.add(step.toLocation(player.getWorld()));
+                }
 
                 m1 = player.getWorld().getBlockAt(step.getBlockX(), step.getBlockY(), step.getBlockZ()).getType();
                 m2 = small ? m1 : player.getWorld().getBlockAt(step.getBlockX(), step.getBlockY() - 1, step.getBlockZ()).getType();
