@@ -141,7 +141,7 @@ public final class DynamicStress extends JavaPlugin {
                             player.sendTitle("", "" + ChatColor.BOLD + ChatColor.BLACK + heartRate + ChatColor.DARK_GRAY + " BPM", 0, 11, 0);
                         }
                     }
-
+                    
                     HashMap<Player, Double> playerDistances = new HashMap<>();
                     String title = "";
 
