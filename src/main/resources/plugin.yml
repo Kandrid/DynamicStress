@@ -3,3 +3,7 @@ version: ${project.version}
 main: me.kandrid.dynamicstress.DynamicStress
 api-version: 1.13
 authors: [Kandrid]
+commands:
+  ds_debug:
+    description: Toggles Debug Mode
+    usage: /<command>
