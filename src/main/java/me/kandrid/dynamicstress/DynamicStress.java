@@ -1,7 +1,6 @@
 package me.kandrid.dynamicstress;
 
 import org.bukkit.*;
-import org.bukkit.command.Command;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -11,17 +10,12 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.beans.EventHandler;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
 public final class DynamicStress extends JavaPlugin {
-
-    private static EventListener eventListener;
-
-    private static CommandListener commandListener;
 
     private static HashMap<UUID, Double> heartRates = new HashMap<>();
 
@@ -72,8 +66,8 @@ public final class DynamicStress extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
 
-        eventListener = new EventListener();
-        commandListener = new CommandListener();
+        EventListener eventListener = new EventListener();
+        CommandListener commandListener = new CommandListener();
 
         getCommand("ds_debug").setExecutor(commandListener);
         Bukkit.getPluginManager().registerEvents(eventListener, this);
