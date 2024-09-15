@@ -28,7 +28,7 @@ public final class DynamicStress extends JavaPlugin {
     private static HashMap<UUID, Double> playerBeats = new HashMap<>();
 
     final static double maxDistance = 35;
-    final static double baseHeartRate = 75;
+    final static double baseHeartRate = 65;
     private static boolean itemTitleModify = false;
     protected static boolean debug = false;
     private static int raySteps = 0;
@@ -126,20 +126,21 @@ public final class DynamicStress extends JavaPlugin {
 
                     if (player.getInventory().getItemInOffHand().getType() == Material.OAK_BUTTON || player.getInventory().getItemInMainHand().getType() == Material.OAK_BUTTON) {
                         if (heartRate < 100) {
-                            player.sendTitle("", "" + ChatColor.BOLD + ChatColor.GREEN + heartRate + ChatColor.DARK_GRAY + " BPM", 0, 11, 0);
+                            player.sendTitle(" ", "" + ChatColor.BOLD + ChatColor.GREEN + heartRate + ChatColor.DARK_GRAY + " BPM", 0, 11, 0);
                         } else if (heartRate < 150) {
-                            player.sendTitle("", "" + ChatColor.BOLD + ChatColor.RED + heartRate + ChatColor.DARK_GRAY + " BPM", 0, 11, 0);
+                            player.sendTitle(" ", "" + ChatColor.BOLD + ChatColor.RED + heartRate + ChatColor.DARK_GRAY + " BPM", 0, 11, 0);
                         } else if (heartRate < 175) {
-                            player.sendTitle("", "" + ChatColor.BOLD + ChatColor.DARK_RED + heartRate + ChatColor.DARK_GRAY + " BPM", 0, 11, 0);
+                            player.sendTitle(" ", "" + ChatColor.BOLD + ChatColor.DARK_RED + heartRate + ChatColor.DARK_GRAY + " BPM", 0, 11, 0);
                         } else {
-                            player.sendTitle("", "" + ChatColor.BOLD + ChatColor.BLACK + heartRate + ChatColor.DARK_GRAY + " BPM", 0, 11, 0);
+                            player.sendTitle(" ", "" + ChatColor.BOLD + ChatColor.BLACK + heartRate + ChatColor.DARK_GRAY + " BPM", 0, 11, 0);
                         }
                     }
-                    
+
                     HashMap<Player, Double> playerDistances = new HashMap<>();
                     String title = "";
 
                     for (Player onlinePlayer : getServer().getOnlinePlayers()) {
+                        if (!onlinePlayer.getWorld().equals(player.getWorld())) continue;
                         if (!onlinePlayer.equals(player)) {
                             playerDistances.put(onlinePlayer, player.getLocation().distanceSquared(onlinePlayer.getLocation()));
                         }
@@ -157,7 +158,11 @@ public final class DynamicStress extends JavaPlugin {
                                 }
                             }
 
-                            double otherHeartRate = getHeartRates().get(min.getKey().getUniqueId());
+                            if (min == null) continue;
+
+                            Double otherHeartRate = getHeartRates().get(min.getKey().getUniqueId());
+
+                            if (otherHeartRate == null) continue;
 
                             title += (ChatColor.DARK_AQUA + min.getKey().getDisplayName() + ": " + ChatColor.AQUA + (int) Math.round(otherHeartRate) + ChatColor.DARK_GRAY + " BPM ");
                             playerDistances.remove(min.getKey());
@@ -166,9 +171,6 @@ public final class DynamicStress extends JavaPlugin {
 
                     if (itemTitleModify) {
                         title = ChatColor.DARK_BLUE + "- " + title + ChatColor.DARK_BLUE + " -";
-                        itemTitleModify = false;
-                    } else {
-                        itemTitleModify = true;
                     }
 
                     if (player.getInventory().getItemInMainHand().getType() == Material.OAK_BUTTON) {
@@ -178,6 +180,8 @@ public final class DynamicStress extends JavaPlugin {
                         item.setItemMeta(itemMeta);
                     }
                 }
+
+                itemTitleModify = !itemTitleModify;
             }
 
         }.runTaskTimer(this, 0L, 10L);
@@ -192,7 +196,7 @@ public final class DynamicStress extends JavaPlugin {
                     double heartBeat = getHeartRates().get(player.getUniqueId());
                     double progress = playerBeats.get(player.getUniqueId());
                     if (progress >= 60.0 / heartBeat) {
-                        if (player.getInventory().contains(Material.OAK_BUTTON)) {
+                        if (player.getInventory().contains(Material.OAK_BUTTON) || player.getInventory().getItemInOffHand().getType() == Material.OAK_BUTTON) {
                             player.playNote(player.getLocation().toVector().add(new Vector(0, 80.0 - 0.4 * heartBeat,0)).toLocation(player.getWorld()), Instrument.BASS_DRUM, Note.natural(0, Note.Tone.A));
                         }
                         progress = 0.0;
@@ -214,15 +218,19 @@ public final class DynamicStress extends JavaPlugin {
     private void UpdateHeartRate(Player player, double distance) {
         UUID playerID = player.getUniqueId();
         final HashSet<Integer> mobIDs = getMobsInSight().get(playerID);
-        final double minHeartRate = baseHeartRate + mobIDs.size() * (baseHeartRate / 8.0);
+        double mobIncrease = mobIDs.size() * 3.0;
+        if (mobIncrease > 15.0) {
+            mobIncrease = 15.0;
+        }
+        final double minHeartRate = baseHeartRate + mobIncrease;
         double current = getHeartRates().get(playerID);
         double startle = StartleBPM(distance);
         current += startle * Math.pow(1.0 - (current - baseHeartRate + 2) / (200.0 - baseHeartRate), 2);
         if (current < 150 && player.isSprinting()) {
-            current += 1.5;
+            current += 1.25;
         }
         if (current - minHeartRate > 0 || current > 150) {
-            current -= 0.5;
+            current -= 0.75;
         } else {
             current += 2.5;
         }
@@ -246,7 +254,6 @@ public final class DynamicStress extends JavaPlugin {
         }
         if (heartRate >= 150) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 0));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 300, 0));
         }
     }
 
@@ -258,7 +265,7 @@ public final class DynamicStress extends JavaPlugin {
         pLocation.setY(pLocation.getY() + (player.isSneaking() ? 1.25 : 1.6));
         final double eDistance = eLocation.distance(pLocation);
         final double fov = 60;
-        final double precision = 1;
+        final double precision = 0.75;
         final Vector eVector = new Vector((eLocation.getX() - pLocation.getX()) / eDistance, (eLocation.getY() - pLocation.getY()) / eDistance, (eLocation.getZ() - pLocation.getZ()) / eDistance);
         final Vector pVector = pLocation.getDirection();
         final double angle = Math.toDegrees(pVector.angle(eVector));
